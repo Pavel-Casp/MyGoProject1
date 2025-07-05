@@ -1,8 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"net/http"
+
+	"github.com/labstack/echo/v4"
 )
 
 type Request struct {
@@ -13,17 +14,10 @@ type Response struct {
 	Result float64 `json:"result"`
 }
 
-func sumHandler(w http.ResponseWriter, r *http.Request) {
-	if r.Method != http.MethodPost {
-		http.Error(w, "Only POST allowed", http.StatusMethodNotAllowed)
-		return
-	}
-
+func sumHandler(c echo.Context) error {
 	var req Request
-	err := json.NewDecoder(r.Body).Decode(&req)
-	if err != nil {
-		http.Error(w, "Invalid JSON", http.StatusBadRequest)
-		return
+	if err := c.Bind(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid JSON"})
 	}
 
 	var sum float64
@@ -31,12 +25,15 @@ func sumHandler(w http.ResponseWriter, r *http.Request) {
 		sum += n
 	}
 
-	resp := Response{Result: sum}
-	w.Header().Set("Content-Type", "application/json")
-	json.NewEncoder(w).Encode(resp)
+	return c.JSON(http.StatusOK, Response{Result: sum})
 }
 
 func main() {
-	http.HandleFunc("/sum", sumHandler)
-	http.ListenAndServe(":8080", nil)
+	e := echo.New()
+
+	// Роутинг
+	e.POST("/sum", sumHandler)
+
+	// Запуск сервера
+	e.Logger.Fatal(e.Start(":8080"))
 }
