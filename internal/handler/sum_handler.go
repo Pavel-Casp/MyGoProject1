@@ -3,7 +3,7 @@ package handler
 import (
 	"net/http"
 
-	"github.com/Pavel-Casp/MyGoProject1/internal/service"
+	"github.com/Pavel-Casp/MyGoProject1/internal/service" // Добавьте этот импорт
 	"github.com/labstack/echo/v4"
 )
 
