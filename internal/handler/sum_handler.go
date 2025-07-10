@@ -1,26 +1,26 @@
 package handler
 
 import (
-	"MyGoProject/internal/service"
 	"net/http"
 
+	"github.com/Pavel-Casp/MyGoProject1/internal/service"
 	"github.com/labstack/echo/v4"
 )
 
-type SumRequest struct {
+type Request struct {
 	Numbers []float64 `json:"numbers"`
 }
 
-type SumResponse struct {
+type Response struct {
 	Result float64 `json:"result"`
 }
 
 func SumHandler(c echo.Context) error {
-	var req SumRequest
+	var req Request
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, map[string]string{"error": "Invalid JSON"})
 	}
 
-	result := service.CalculateSum(req.Numbers)
-	return c.JSON(http.StatusOK, SumResponse{Result: result})
+	sum := service.Sum(req.Numbers)
+	return c.JSON(http.StatusOK, Response{Result: sum})
 }
