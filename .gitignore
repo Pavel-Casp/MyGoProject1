@@ -3,3 +3,5 @@ bin/
 .env
 *.log
 go.sum
+/docs/swagger.json
+/docs/docs.go
