@@ -2,6 +2,8 @@ package config
 
 import (
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/spf13/viper"
 )
@@ -18,27 +20,31 @@ type Config struct {
 func Load() (*Config, error) {
 	v := viper.New()
 
-	// 1. Чтение из файла
-	v.SetConfigName("config")
-	v.SetConfigType("yaml")
-	v.AddConfigPath("../configs")
-
-	if err := v.ReadInConfig(); err != nil {
-		log.Printf("Config file not found, using env vars. Error: %v", err)
+	configPath := os.Getenv("CONFIG_PATH")
+	if configPath == "" {
+		configPath = "./configs"
 	}
 
-	// 2. Чтение из переменных окружения
+	v.SetConfigName("config")
+	v.SetConfigType("yaml")
+	v.AddConfigPath(configPath)
+
+	if err := v.ReadInConfig(); err != nil {
+		log.Printf("Config file not found at %s, using env vars. Error: %v",
+			filepath.Join(configPath, "config.yaml"), err)
+	}
+
 	v.AutomaticEnv()
 	v.SetEnvPrefix("APP")
-	v.BindEnv("server.port", "SERVER_PORT")
-	v.BindEnv("logger.level", "LOGGER_LEVEL")
+	v.BindEnv("server.port", "APP_SERVER_PORT")
+	v.BindEnv("logger.level", "APP_LOGGER_LEVEL")
 
 	var cfg Config
 	if err := v.Unmarshal(&cfg); err != nil {
 		return nil, err
 	}
 
-	// Значения по умолчанию
+	// Устанавливаем значения по умолчанию
 	if cfg.Server.Port == "" {
 		cfg.Server.Port = "8080"
 	}
